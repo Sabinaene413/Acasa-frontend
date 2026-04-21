@@ -1,0 +1,95 @@
+<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12 relative overflow-hidden">
+  <!-- Subtle background element -->
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-linear-to-b from-orange/5 to-transparent rounded-full blur-3xl -z-10"></div>
+
+  <div class="max-w-md w-full animate-in fade-in zoom-in duration-500">
+    <!-- Card -->
+    <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+      <!-- Top accent line -->
+      <div class="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-orange to-orange-600"></div>
+
+      <div class="text-center mb-10">
+        <div class="w-16 h-16 bg-orange/10 rounded-2xl flex items-center justify-center text-orange mx-auto mb-6 shadow-sm">
+          <i class="pi pi-user text-3xl"></i>
+        </div>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Bun venit <span class="text-orange">înapoi</span></h2>
+        <p class="text-slate-400 mt-2 font-medium text-sm">Introdu datele tale pentru a accesa platforma</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Email Field -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email</label>
+          <div class="relative group">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange transition-colors">
+              <i class="pi pi-envelope text-sm"></i>
+            </span>
+            <input
+              formControlName="email"
+              type="email"
+              placeholder="nume@exemplu.ro"
+              class="w-full h-12 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-orange/30 focus:bg-white focus:ring-4 focus:ring-orange/5 outline-none transition-all text-slate-800 font-medium"
+              [class.!border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+            >
+          </div>
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <span class="text-red-500 text-[10px] font-bold flex items-center gap-1 ml-1">
+              <i class="pi pi-exclamation-circle"></i>
+              Vă rugăm să introduceți un email valid.
+            </span>
+          }
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Parolă</label>
+            <a href="#" class="text-[10px] font-bold text-orange hover:underline uppercase tracking-wider">Ai uitat parola?</a>
+          </div>
+          <div class="relative group">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange transition-colors">
+              <i class="pi pi-lock text-sm"></i>
+            </span>
+            <input
+              formControlName="password"
+              type="password"
+              placeholder="••••••••"
+              class="w-full h-12 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-orange/30 focus:bg-white focus:ring-4 focus:ring-orange/5 outline-none transition-all text-slate-800 font-medium"
+              [class.!border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            >
+          </div>
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <span class="text-red-500 text-[10px] font-bold flex items-center gap-1 ml-1">
+              <i class="pi pi-exclamation-circle"></i>
+              Parola trebuie să aibă minim 6 caractere.
+            </span>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <button
+            type="submit"
+            [disabled]="loginForm.invalid"
+            class="w-full h-14 bg-orange text-white rounded-2xl font-black text-base shadow-lg shadow-orange/20 hover:bg-orange-600 hover:-translate-y-0.5 active:scale-[0.98] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
+          >
+            Intră în cont
+            <i class="pi pi-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- Footer Actions -->
+      <div class="mt-10 pt-8 border-t border-slate-50 text-center space-y-4">
+        <p class="text-slate-400 text-sm font-medium">
+          Nu ai încă un cont?
+          <a routerLink="/register" class="text-orange font-black hover:underline ml-1">Înregistrează-te</a>
+        </p>
+        <a routerLink="/" class="inline-flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-slate-600 transition-colors">
+          <i class="pi pi-arrow-left text-[10px]"></i>
+          Înapoi la început
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

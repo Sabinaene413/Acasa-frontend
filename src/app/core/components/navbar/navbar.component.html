@@ -1,0 +1,111 @@
+<nav class="fixed top-0 left-0 right-0 z-[100] bg-white/70 backdrop-blur-xl border-b border-slate-200/50 shadow-sm transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <div
+      routerLink="/"
+      class="flex items-center gap-2 group cursor-pointer"
+    >
+      <div class="w-8 h-8 bg-orange rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange/20 group-hover:scale-110 transition-transform">
+        <i class="pi pi-home text-sm"></i>
+      </div>
+      <span class="text-xl font-black text-slate-900 tracking-tighter">
+        Acasă<span class="text-orange">.</span>
+      </span>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="hidden md:flex items-center gap-1">
+      <a
+        routerLink="/"
+        [routerLinkActiveOptions]="{exact: true}"
+        routerLinkActive="!text-orange bg-orange/5"
+        class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange hover:bg-slate-50 rounded-xl transition-all"
+      >
+        Explorează
+      </a>
+      <a
+        routerLink="/map"
+        routerLinkActive="!text-orange bg-orange/5"
+        class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange hover:bg-slate-50 rounded-xl transition-all"
+      >
+        Hartă
+      </a>
+      @if (isAuthenticated()) {
+        <a
+          routerLink="/add-property"
+          routerLinkActive="!text-orange bg-orange/5"
+          class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange hover:bg-slate-50 rounded-xl transition-all"
+        >
+          Adaugă Anunț
+        </a>
+      }
+    </div>
+
+    <!-- Auth / User Section -->
+    <div class="flex items-center gap-3">
+      @if (isAuthenticated()) {
+        <div class="relative">
+          <button
+            (click)="toggleDropdown()"
+            class="group flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-slate-50 border border-slate-200 hover:border-orange/30 hover:bg-white transition-all shadow-sm"
+          >
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 hidden lg:block group-hover:text-slate-600">Meniul Meu</span>
+            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-400 group-hover:bg-orange group-hover:text-white transition-all">
+              <i class="pi pi-user text-sm"></i>
+            </div>
+          </button>
+
+          <!-- Dropdown -->
+          @if (isDropdownOpen()) {
+            <div
+              class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-[110] animate-in fade-in slide-in-from-top-2 duration-200"
+              (click)="$event.stopPropagation()"
+            >
+              <div class="px-4 py-2 mb-2">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Cont Utilizator</p>
+              </div>
+              
+              <a
+                routerLink="/contul-meu"
+                (click)="closeDropdown()"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-orange transition-all"
+              >
+                <i class="pi pi-user text-xs opacity-50"></i>
+                Profilul Meu
+              </a>
+              
+              <div class="h-px bg-slate-50 my-2 mx-4"></div>
+              
+              <button
+                (click)="logout()"
+                class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
+              >
+                <i class="pi pi-sign-out text-xs opacity-50"></i>
+                Delogare
+              </button>
+            </div>
+          }
+
+          @if (isDropdownOpen()) {
+            <div class="fixed inset-0 z-[-1]" (click)="closeDropdown()"></div>
+          }
+        </div>
+      } @else {
+        <div class="flex items-center gap-2">
+          <a
+            routerLink="/login"
+            class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange transition-all"
+          >
+            Login
+          </a>
+          <a
+            routerLink="/register"
+            class="px-6 py-2.5 text-sm bg-slate-900 text-white rounded-xl font-black hover:bg-orange shadow-lg shadow-slate-900/10 hover:shadow-orange/20 transition-all active:scale-95"
+          >
+            Creează Cont
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,96 @@
+<div
+  class="absolute top-16 left-0 h-[calc(100vh-64px)] w-[320px] bg-white shadow-2xl z-20 transition-transform duration-300 ease-in-out border-r border-gray-100 flex flex-col rounded-r-2xl"
+  [class.translate-x-0]="isOpen()"
+  [class.-translate-x-full]="!isOpen()"
+>
+  <div class="p-6 flex items-center justify-between border-b border-gray-50">
+    <div class="flex items-center gap-3">
+      <h2 class="text-xl font-black text-navy flex items-center gap-2">
+        <i class="pi pi-filter-fill text-orange"></i>
+        Filtre
+      </h2>
+      <button
+        (click)="reset()"
+        class="flex items-center gap-1 px-2 py-1 text-xs font-bold text-gray-400 hover:text-orange transition-colors"
+        title="Resetează filtrele"
+      >
+        <i class="pi pi-refresh"></i>
+        Reset
+      </button>
+    </div>
+    <button
+      (click)="close()"
+      class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-navy"
+    >
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+    <div class="space-y-3">
+      <label class="block text-sm font-bold text-navy uppercase tracking-wider">Județ</label>
+      <p-select
+        [options]="counties()"
+        [(ngModel)]="selectedCountyId"
+        [ngModelOptions]="{standalone: true}"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selectează un județ"
+        class="w-full"
+        appendTo="body"
+        [showClear]="true"
+      ></p-select>
+    </div>
+
+    <div class="space-y-3">
+      <label class="block text-sm font-bold text-navy uppercase tracking-wider">Preț (€)</label>
+      <div class="grid grid-cols-2 gap-3">
+        <p-inputNumber
+          [(ngModel)]="minPrice"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="Min"
+          styleClass="w-full"
+          inputStyleClass="w-full bg-gray-50 border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-orange/20 text-navy font-semibold"
+        ></p-inputNumber>
+        <p-inputNumber
+          [(ngModel)]="maxPrice"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="Max"
+          styleClass="w-full"
+          inputStyleClass="w-full bg-gray-50 border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-orange/20 text-navy font-semibold"
+        ></p-inputNumber>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <label class="block text-sm font-bold text-navy uppercase tracking-wider">Dormitoare</label>
+      <div class="flex flex-wrap gap-2">
+        @for (count of [1, 2, 3, 4, 5]; track count) {
+          <button
+            (click)="selectBedrooms(count)"
+            class="px-4 py-2 rounded-xl border-2 transition-all duration-200 font-bold text-sm"
+            [class.bg-orange]="selectedBedrooms() === count"
+            [class.border-orange]="selectedBedrooms() === count"
+            [class.text-white]="selectedBedrooms() === count"
+            [class.bg-gray-50]="selectedBedrooms() !== count"
+            [class.border-transparent]="selectedBedrooms() !== count"
+            [class.text-navy]="selectedBedrooms() !== count"
+            [class.hover:border-orange/30]="selectedBedrooms() !== count"
+          >
+            {{ count == 5 ? '5+' : count }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="p-6 border-t border-gray-50 bg-gray-50/50">
+    <button
+      (click)="apply()"
+      class="w-full bg-orange hover:bg-orange/90 text-white font-black py-4 rounded-2xl shadow-lg shadow-orange/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+    >
+      <i class="pi pi-check-circle"></i>
+      Aplică Filtre
+    </button>
+  </div>
+</div>

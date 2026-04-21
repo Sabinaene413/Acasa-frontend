@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+  }
+}
+
+::ng-deep {
+  .price-marker {
+    background: white;
+    border: 2px solid #ed985f;
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-weight: 700;
+    color: #001f3d;
+    font-size: 12px;
+    font-family: sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      all 0.2s ease-in-out;
+  }
+
+  .price-marker:hover {
+    background: #ed985f;
+    color: white;
+    transform: scale(1.1);
+    z-index: 1000 !important;
+  }
+
+  // PrimeNG InputNumber overrides for better integration
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-select {
+    border-radius: 12px !important;
+    background-color: #f9fafb !important;
+    border: 1px solid #f3f4f6 !important;
+
+    &:hover {
+      border-color: #ed985f !important;
+    }
+
+    &.p-focus {
+      box-shadow: 0 0 0 4px rgba(237, 152, 95, 0.1) !important;
+      border-color: #ed985f !important;
+    }
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .leaflet-popup-content {
+    margin: 0;
+    width: auto !important;
+  }
+
+  .custom-cluster {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ed985f;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}

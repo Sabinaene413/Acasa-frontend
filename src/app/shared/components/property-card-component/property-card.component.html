@@ -1,0 +1,69 @@
+<div [routerLink]="['/property', property.id]"
+  class="bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 border border-slate-100 overflow-hidden transition-all duration-300 cursor-pointer group flex flex-col h-full">
+
+  <!-- Image Section -->
+  <div class="h-56 bg-slate-100 relative overflow-hidden">
+    <img [src]="primaryImage" alt="{{ property.title }}"
+      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+    
+    <!-- Price Badge -->
+    <div class="absolute bottom-4 left-4">
+      <div class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-white/20">
+        <span class="text-orange font-black text-lg">
+          {{ property.price | currency: "EUR" : "symbol" : "1.0-0" }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Location Overlay (Optional visual) -->
+    <div class="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div class="bg-slate-900/40 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
+        <i class="pi pi-map-marker text-orange"></i>
+        Vezi Detalii
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="p-6 flex flex-col flex-grow space-y-4">
+    <div class="space-y-2">
+      <h3 class="text-lg font-bold text-slate-800 leading-snug group-hover:text-orange transition-colors line-clamp-2">
+        {{ property.title }}
+      </h3>
+      <div class="flex items-center gap-1.5 text-slate-400">
+        <i class="pi pi-map-marker text-[10px]"></i>
+        <span class="text-[11px] font-medium uppercase tracking-wide truncate">Localizare Disponibilă</span>
+      </div>
+    </div>
+
+    <p class="text-slate-500 text-sm line-clamp-2 leading-relaxed flex-grow">
+      {{ property.description }}
+    </p>
+
+    <!-- Features Divider -->
+    <div class="h-px bg-slate-50 w-full"></div>
+
+    <!-- Features Grid -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex items-center gap-2.5 bg-slate-50/50 p-2 rounded-xl border border-slate-50">
+        <div class="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center text-orange">
+          <i class="pi pi-home text-xs"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Camere</span>
+          <span class="text-xs font-black text-slate-700">{{ property.bedrooms }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 bg-slate-50/50 p-2 rounded-xl border border-slate-50">
+        <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+          <i class="pi pi-expand text-xs"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Suprafață</span>
+          <span class="text-xs font-black text-slate-700">{{ property.surfaceArea }} <span class="text-[9px] font-bold">m²</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

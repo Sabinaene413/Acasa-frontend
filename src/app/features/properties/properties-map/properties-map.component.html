@@ -1,0 +1,42 @@
+<app-navbar></app-navbar>
+
+<div class="pt-16 h-screen flex flex-col relative overflow-hidden">
+  <!-- Map Container (Dumb) -->
+  <div class="flex-1 relative">
+    <app-property-map-ui
+      [properties]="properties()"
+      (propertySelected)="onPropertySelected($event)"
+    ></app-property-map-ui>
+
+    <!-- Floating Filter Trigger -->
+    @if (!isSidebarOpen()) {
+      <button
+        (click)="toggleSidebar()"
+        class="absolute top-4 left-4 z-10 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 active:scale-95 group"
+      >
+        <i class="pi pi-sliders-h text-orange group-hover:rotate-180 transition-transform duration-500"></i>
+        <span class="font-bold text-navy">Filtrează</span>
+      </button>
+    }
+
+    @if (isLoading()) {
+      <div class="absolute inset-0 z-10 bg-white/50 flex items-center justify-center backdrop-blur-sm">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-orange border-t-transparent"></div>
+      </div>
+    }
+  </div>
+
+  <!-- Filter Sidebar (Dumb) -->
+  <app-map-filter-sidebar
+    [counties]="counties()"
+    [(isOpen)]="isSidebarOpen"
+    (filterChanged)="onFilterApply($event)"
+    ></app-map-filter-sidebar>
+
+    <!-- Details Sidebar (Dumb) -->
+    <app-property-details-sidebar
+    [property]="selectedProperty()"
+    [(isOpen)]="isDetailsSidebarOpen"
+    (closeSidebar)="onDetailsClosed()"
+    ></app-property-details-sidebar>
+    </div>

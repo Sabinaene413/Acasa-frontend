@@ -1,0 +1,37 @@
+<!-- Loading state -->
+@if (isLoading) {
+  <div class="flex flex-col items-center justify-center py-32 space-y-6">
+    <div class="relative w-16 h-16">
+      <div class="absolute inset-0 border-4 border-orange/20 rounded-full"></div>
+      <div class="absolute inset-0 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    <div class="text-center">
+      <h3 class="text-slate-800 font-bold text-lg">Căutăm oferte...</h3>
+      <p class="text-slate-400 text-sm">Analizăm baza noastră de date pentru cele mai bune opțiuni.</p>
+    </div>
+  </div>
+}
+
+<!-- Empty state -->
+@if (!isLoading && properties.length === 0) {
+  <div class="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-sm">
+    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+      <i class="pi pi-search text-3xl text-slate-200"></i>
+    </div>
+    <div class="text-center max-w-sm px-6">
+      <h3 class="text-xl font-bold text-slate-800 mb-2">Niciun rezultat găsit</h3>
+      <p class="text-slate-400 text-sm leading-relaxed">
+        Nu am găsit nicio proprietate care să corespundă filtrelor tale. Încearcă să relaxezi criteriile de căutare.
+      </p>
+    </div>
+  </div>
+}
+
+<!-- Results grid -->
+@if (!isLoading && properties.length > 0) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    @for (property of properties; track property.id) {
+      <app-property-card [property]="property" />
+    }
+  </div>
+}

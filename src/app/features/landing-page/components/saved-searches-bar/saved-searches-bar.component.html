@@ -1,0 +1,28 @@
+@if (savedSearches().length > 0) {
+  <div class="w-full mt-10">
+    <div class="flex items-center gap-2 mb-3 px-1">
+      <i class="pi pi-history text-slate-400 text-xs"></i>
+      <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Căutări recente & salvate</span>
+    </div>
+    
+    <div class="flex flex-wrap gap-2.5">
+      @for (search of savedSearches(); track search.id) {
+        <div class="group flex items-center bg-white border border-slate-100 rounded-full px-4 py-2 shadow-sm hover:border-orange/30 hover:shadow-md transition-all duration-300">
+          <button type="button" (click)="onApply(search)"
+            class="flex items-center gap-2 text-xs font-bold text-slate-600 group-hover:text-orange transition-colors">
+            <i class="pi pi-bookmark-fill text-[10px] text-orange/50 group-hover:text-orange transition-colors"></i>
+            {{ search.name }}
+          </button>
+
+          <div class="w-px h-3 bg-slate-100 mx-3"></div>
+
+          <button type="button" (click)="onDelete(search.id)"
+            class="text-slate-300 hover:text-red-500 hover:scale-110 transition-all"
+            title="Elimină căutarea">
+            <i class="pi pi-times text-[10px]"></i>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

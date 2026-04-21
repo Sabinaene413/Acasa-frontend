@@ -1,0 +1,82 @@
+<div
+  class="absolute top-16 right-0 h-[calc(100vh-64px)] w-[400px] bg-white shadow-2xl z-30 transition-transform duration-500 ease-out border-l border-gray-100 flex flex-col rounded-l-3xl"
+  [class.translate-x-0]="isOpen() && property()"
+  [class.translate-x-full]="!isOpen() || !property()"
+>
+  @if (property(); as p) {
+    <!-- Header -->
+    <div class="relative h-64 shrink-0 cursor-pointer" [routerLink]="['/property', p.id]">
+      <img
+        [src]="p.images[0]?.url || 'assets/placeholder-property.jpg'"
+        class="w-full h-full object-cover rounded-tl-3xl"
+        alt="Property Image"
+      >
+      <button
+        (click)="onClose(); $event.stopPropagation()"
+        class="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+      <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-navy/80 to-transparent">
+        <h2 class="text-white text-xl font-black truncate">{{ p.title }}</h2>
+        <p class="text-orange text-lg font-black">{{ p.price | number:'1.0-0' }} €</p>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+      <!-- Info Grid -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-gray-50 p-4 rounded-2xl text-center">
+          <i class="pi pi-home text-orange mb-2 block text-xl"></i>
+          <span class="block text-xs font-bold text-gray-400 uppercase">Camere</span>
+          <span class="text-navy font-black">{{ p.bedrooms }}</span>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-2xl text-center">
+          <i class="pi pi-map-marker text-orange mb-2 block text-xl"></i>
+          <span class="block text-xs font-bold text-gray-400 uppercase">Suprafață</span>
+          <span class="text-navy font-black">{{ p.surfaceArea }} m²</span>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-2xl text-center">
+          <i class="pi pi-info-circle text-orange mb-2 block text-xl"></i>
+          <span class="block text-xs font-bold text-gray-400 uppercase">Băi</span>
+          <span class="text-navy font-black">{{ p.bathrooms }}</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-black text-navy uppercase tracking-widest">Descriere</h3>
+        <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{{ p.description }}</p>
+      </div>
+
+      <!-- Address -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-black text-navy uppercase tracking-widest">Adresă</h3>
+        <div class="flex items-start gap-2 text-gray-600 text-sm italic">
+          <i class="pi pi-directions text-orange mt-1"></i>
+          <span>{{ p.address }}, {{ p.city?.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action -->
+    <div class="p-6 border-t border-gray-50 bg-gray-50/50 space-y-3">
+      <button
+        [routerLink]="['/property', p.id]"
+        class="w-full bg-orange text-white font-black py-4 rounded-2xl shadow-xl shadow-orange/10 hover:bg-orange/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+      >
+        <i class="pi pi-external-link"></i>
+        Vezi Detalii Complete
+      </button>
+
+      <button
+        (click)="togglePhone()"
+        class="w-full bg-navy text-white font-black py-4 rounded-2xl shadow-xl shadow-navy/10 hover:bg-navy/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+      >
+        <i class="pi pi-phone"></i>
+        {{ showPhone() ? '0722 123 456' : 'Vezi număr de telefon' }}
+      </button>
+    </div>
+  }
+</div>

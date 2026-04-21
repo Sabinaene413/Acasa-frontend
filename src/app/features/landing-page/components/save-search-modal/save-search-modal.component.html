@@ -1,0 +1,22 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm mx-4">
+
+    <h3 class="text-xl font-bold text-navy mb-4">Salvează căutarea</h3>
+
+    <input type="text" [(ngModel)]="searchName" name="searchName"
+      placeholder="Ex: Apartament București 2 camere"
+      class="w-full h-12 bg-gray-50 rounded-2xl px-4 text-navy border-2 border-transparent focus:border-orange/20 focus:bg-white transition-all mb-4" />
+
+    <div class="flex gap-3">
+      <button type="button" (click)="onClose()"
+        class="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-navy font-bold hover:bg-gray-50 transition-all">
+        Anulează
+      </button>
+      <button type="button" (click)="onSave()" [disabled]="isSaving()"
+        class="flex-1 py-3 rounded-2xl bg-orange text-white font-bold hover:bg-orange/90 transition-all disabled:opacity-50">
+        {{ isSaving() ? 'Se salvează...' : 'Salvează' }}
+      </button>
+    </div>
+
+  </div>
+</div>

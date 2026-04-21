@@ -1,0 +1,55 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+@import 'primeicons/primeicons.css';
+
+@theme {
+  --color-navy: #001F3D;
+  --color-orange: #ED985F;
+  --color-peach: #F7B980;
+  --color-light-gray: #E6E6E6;
+}
+
+
+
+.p-select {
+
+  @apply bg-gray-50 border-2 border-transparent rounded-2xl h-12 transition-all duration-300;
+
+  &:not(.p-disabled).p-focus {
+    border-color: rgba(var(--color-orange), 0.3);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(var(--color-orange), 0.1);
+  }
+
+  .p-select-label {
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-weight: 500;
+    color: var(--color-navy);
+  }
+}
+
+
+.p-select-overlay {
+  @apply mt-2 rounded-2xl shadow-2xl border-none overflow-hidden;
+
+  .p-select-option {
+    @apply mx-2 my-1 rounded-xl px-4 py-3 transition-all;
+    color: var(--color-navy);
+
+    &:not(.p-highlight):not(.p-disabled):hover {
+      background-color: color-mix(in srgb, var(--color-orange), transparent 90%);
+      color: var(--color-orange);
+    }
+
+    &.p-highlight {
+      background-color: var(--color-orange);
+      color: white;
+      font-weight: 700;
+    }
+  }
+}
