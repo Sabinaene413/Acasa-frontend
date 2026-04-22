@@ -2,7 +2,8 @@ import { Component, ElementRef, ViewChild, AfterViewInit, input, effect, inject,
 import { Property } from '../../../models/property.model';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import 'leaflet.markercluster/dist/leaflet.markercluster.js';
+//import 'leaflet.markercluster/dist/leaflet.markercluster.js';
+declare const require: any;
 
 @Component({
   selector: 'app-property-map-ui',
@@ -32,7 +33,7 @@ import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
   private mapInstance = signal<L.Map | undefined>(undefined);
-  private markersCluster: any; // <-- doar declarație, fără inițializare
+  private markersCluster: any; 
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   
@@ -48,6 +49,8 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    require('leaflet.markercluster');
+
     this.markersCluster = (L as any).markerClusterGroup({
       showCoverageOnHover: false,
       maxClusterRadius: 60,
