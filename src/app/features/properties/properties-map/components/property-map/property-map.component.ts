@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, input, effect, inject, signal, output } from '@angular/core';
 import { Property } from '../../../models/property.model';
 import { Router } from '@angular/router';
+import { MapService } from '../../services/map.service';
 
 @Component({
   selector: 'app-property-map-ui',
@@ -29,8 +30,9 @@ import { Router } from '@angular/router';
 })
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
+  private mapService = inject(MapService);
   private mapInstance = signal<any>(undefined);
-  private currentMarkers: any[] = [];
+  private markerClusterGroup: any;
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
@@ -41,7 +43,7 @@ export class PropertyMapComponent implements AfterViewInit {
     effect(() => {
       const props = this.properties();
       const map = this.mapInstance();
-      if (map && props && props.length > 0) {
+      if (map && props) {
         this.updateMarkers(map, props, true);
       }
     });
@@ -53,9 +55,9 @@ export class PropertyMapComponent implements AfterViewInit {
 
   private loadLeaflet(): Promise<void> {
     return new Promise((resolve) => {
-      if ((window as any).L) { resolve(); return; }
+      if ((window as any).L && (window as any).L.markerClusterGroup) { resolve(); return; }
       const interval = setInterval(() => {
-        if ((window as any).L) { clearInterval(interval); resolve(); }
+        if ((window as any).L && (window as any).L.markerClusterGroup) { clearInterval(interval); resolve(); }
       }, 50);
       setTimeout(() => { clearInterval(interval); resolve(); }, 5000);
     });
@@ -79,10 +81,8 @@ export class PropertyMapComponent implements AfterViewInit {
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    map.on('zoomend', () => {
-      const props = this.properties();
-      if (props?.length) this.updateMarkers(map, props, false);
-    });
+    this.markerClusterGroup = this.mapService.createClusterGroup(L, (id) => this.propertySelected.emit(id));
+    map.addLayer(this.markerClusterGroup);
 
     this.mapContainer.nativeElement.addEventListener('click', (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -98,105 +98,22 @@ export class PropertyMapComponent implements AfterViewInit {
   private updateMarkers(map: any, properties: Property[], shouldFitBounds: boolean = false) {
     const L = (window as any).L;
 
-    // Șterge markerii vechi
-    this.currentMarkers.forEach(m => map.removeLayer(m));
-    this.currentMarkers = [];
+    if (!this.markerClusterGroup) return;
+
+    this.markerClusterGroup.clearLayers();
 
     if (!properties || properties.length === 0) return;
 
-    const zoom = map.getZoom();
     const validProperties = properties.filter(p => p.latitude != null && p.longitude != null);
-    const clustered = this.clusterProperties(validProperties, zoom);
+    
+    const markers = validProperties.map(p => this.mapService.createMarker(L, p, (id) => this.propertySelected.emit(id)));
+    this.markerClusterGroup.addLayers(markers);
 
-    clustered.forEach(cluster => {
-      let marker;
-      if (cluster.count > 1) {
-        marker = L.marker([cluster.lat, cluster.lng], {
-          icon: L.divIcon({
-            className: '',
-            html: `<div class="custom-cluster">${cluster.count}</div>`,
-            iconSize: [40, 40], iconAnchor: [20, 20],
-          })
-        });
-        marker.on('click', () => {
-          const clusterBounds = L.latLngBounds(cluster.properties.map(p => [p.latitude!, p.longitude!]));
-          map.fitBounds(clusterBounds.pad(0.2));
-        });
-      } else {
-        const p = cluster.properties[0];
-        marker = L.marker([p.latitude!, p.longitude!], {
-          icon: L.divIcon({
-            className: '',
-            html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(p.price)} €</div>`,
-            iconSize: [80, 30], iconAnchor: [40, 15],
-          })
-        }).bindPopup(this.createPopupHtml(p), { offset: L.point(0, -15) });
-      }
-
-      marker.addTo(map);
-      this.currentMarkers.push(marker);
-    });
-
-    if (shouldFitBounds && this.currentMarkers.length > 0 && validProperties.length > 0) {
+    if (shouldFitBounds && validProperties.length > 0) {
       const bounds = L.latLngBounds(validProperties.map(p => [p.latitude!, p.longitude!]));
       if (bounds.isValid()) {
         map.fitBounds(bounds.pad(0.1));
       }
     }
-  }
-
-  private clusterProperties(properties: Property[], zoom: number): { lat: number, lng: number, count: number, properties: Property[] }[] {
-    // Ajustăm raza în funcție de zoom. La zoom mare (15+), raza trebuie să fie foarte mică.
-    // 2 / 2^(zoom-5) este o formulă bună, dar eliminăm Math.max(0.01) care era prea restrictiv la zoom mare.
-    const radius = 2 / Math.pow(2, zoom - 5);
-    const clusters: { lat: number, lng: number, count: number, properties: Property[] }[] = [];
-    const used = new Set<number>();
-
-    // Factor de corecție pentru longitudine bazat pe latitudinea medie a României (~45 grade)
-    const lngContext = Math.cos(45 * Math.PI / 180);
-
-    properties.forEach((p, i) => {
-      if (used.has(i)) return;
-      const cluster = { lat: p.latitude!, lng: p.longitude!, count: 1, properties: [p] };
-      used.add(i);
-
-      properties.forEach((p2, j) => {
-        if (used.has(j)) return;
-        
-        // Calculăm distanța aproximativă în grade, corectând longitudinea
-        const latDist = p.latitude! - p2.latitude!;
-        const lngDist = (p.longitude! - p2.longitude!) * lngContext;
-        const dist = Math.sqrt(latDist * latDist + lngDist * lngDist);
-        
-        if (dist < radius) {
-          cluster.count++;
-          cluster.properties.push(p2);
-          // Actualizăm centrul clusterului (media aritmetică)
-          cluster.lat = (cluster.lat * (cluster.count - 1) + p2.latitude!) / cluster.count;
-          cluster.lng = (cluster.lng * (cluster.count - 1) + p2.longitude!) / cluster.count;
-          used.add(j);
-        }
-      });
-
-      clusters.push(cluster);
-    });
-
-    return clusters;
-  }
-
-  private createPopupHtml(p: Property): string {
-    const imageUrl = p.images?.[0]?.url || 'assets/placeholder-property.jpg';
-    return `
-      <div class="w-56 p-0 overflow-hidden rounded-xl bg-white">
-        <img src="${imageUrl}" class="w-full h-32 object-cover">
-        <div class="p-3">
-          <h3 class="font-bold text-navy truncate">${p.title}</h3>
-          <p class="text-orange font-black">${new Intl.NumberFormat('de-DE').format(p.price)} €</p>
-          <button class="view-details-btn mt-3 w-full py-2 bg-navy text-white text-xs font-bold rounded-lg hover:bg-orange transition-all cursor-pointer" data-id="${p.id}">
-            Vezi Detalii
-          </button>
-        </div>
-      </div>
-    `;
   }
 }
