@@ -32,20 +32,12 @@ import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
   private mapInstance = signal<L.Map | undefined>(undefined);
-  private markersCluster = (L as any).markerClusterGroup({
-    showCoverageOnHover: false,
-    maxClusterRadius: 60,
-    spiderfyOnMaxZoom: true,
-    iconCreateFunction: (cluster: any) => L.divIcon({
-      html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
-      className: '', iconSize: [40, 40], iconAnchor: [20, 20]
-    }),
-  });
+  private markersCluster: any; // <-- doar declarație, fără inițializare
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   
   properties = input<Property[]>([]);
-  propertySelected = output<number>(); // Emitem ID-ul proprietății
+  propertySelected = output<number>();
 
   constructor() {
     effect(() => {
@@ -56,6 +48,16 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.markersCluster = (L as any).markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 60,
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: (cluster: any) => L.divIcon({
+        html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
+        className: '', iconSize: [40, 40], iconAnchor: [20, 20]
+      }),
+    });
+
     this.initMap();
   }
 
@@ -76,7 +78,6 @@ export class PropertyMapComponent implements AfterViewInit {
     map.addLayer(this.markersCluster);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // Event Delegation pentru butonul de detalii
     this.mapContainer.nativeElement.addEventListener('click', (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (target.classList.contains('view-details-btn')) {
