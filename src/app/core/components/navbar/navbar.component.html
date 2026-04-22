@@ -13,7 +13,7 @@
       </span>
     </div>
 
-    <!-- Navigation Links -->
+    <!-- Navigation Links (Desktop) -->
     <div class="hidden md:flex items-center gap-1">
       <a
         routerLink="/"
@@ -42,9 +42,9 @@
     </div>
 
     <!-- Auth / User Section -->
-    <div class="flex items-center gap-3">
-      @if (isAuthenticated()) {
-        <div class="relative">
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        @if (isAuthenticated()) {
           <button
             (click)="toggleDropdown()"
             class="group flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-slate-50 border border-slate-200 hover:border-orange/30 hover:bg-white transition-all shadow-sm"
@@ -54,17 +54,77 @@
               <i class="pi pi-user text-sm"></i>
             </div>
           </button>
-
-          <!-- Dropdown -->
-          @if (isDropdownOpen()) {
-            <div
-              class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-[110] animate-in fade-in slide-in-from-top-2 duration-200"
-              (click)="$event.stopPropagation()"
+        } @else {
+          <!-- Guest Mobile Menu Toggle -->
+          <button
+            (click)="toggleDropdown()"
+            class="md:hidden w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 hover:text-orange transition-all"
+          >
+            <i class="pi pi-bars"></i>
+          </button>
+          
+          <!-- Guest Desktop Auth -->
+          <div class="hidden md:flex items-center gap-2">
+            <a
+              routerLink="/login"
+              class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange transition-all"
             >
-              <div class="px-4 py-2 mb-2">
+              Login
+            </a>
+            <a
+              routerLink="/register"
+              class="px-6 py-2.5 text-sm bg-slate-900 text-white rounded-xl font-black hover:bg-orange shadow-lg shadow-slate-900/10 hover:shadow-orange/20 transition-all active:scale-95"
+            >
+              Creează Cont
+            </a>
+          </div>
+        }
+
+        <!-- Dropdown Menu -->
+        @if (isDropdownOpen()) {
+          <div
+            class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-[110] animate-in fade-in slide-in-from-top-2 duration-200"
+            (click)="$event.stopPropagation()"
+          >
+            <!-- Mobile Specific Links -->
+            <div class="md:hidden">
+              <div class="px-4 py-2 mb-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Navigare</p>
+              </div>
+              <a
+                routerLink="/"
+                (click)="closeDropdown()"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-orange transition-all"
+              >
+                <i class="pi pi-home text-xs opacity-50"></i>
+                Explorează
+              </a>
+              <a
+                routerLink="/map"
+                (click)="closeDropdown()"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-orange transition-all"
+              >
+                <i class="pi pi-map text-xs opacity-50"></i>
+                Hartă
+              </a>
+              @if (isAuthenticated()) {
+                <a
+                  routerLink="/add-property"
+                  (click)="closeDropdown()"
+                  class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-orange transition-all"
+                >
+                  <i class="pi pi-plus-circle text-xs opacity-50"></i>
+                  Adaugă Anunț
+                </a>
+              }
+              <div class="h-px bg-slate-50 my-2 mx-4"></div>
+            </div>
+
+            <!-- Auth Section -->
+            @if (isAuthenticated()) {
+              <div class="px-4 py-2 mb-1">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Cont Utilizator</p>
               </div>
-              
               <a
                 routerLink="/contul-meu"
                 (click)="closeDropdown()"
@@ -73,9 +133,7 @@
                 <i class="pi pi-user text-xs opacity-50"></i>
                 Profilul Meu
               </a>
-              
               <div class="h-px bg-slate-50 my-2 mx-4"></div>
-              
               <button
                 (click)="logout()"
                 class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
@@ -83,29 +141,34 @@
                 <i class="pi pi-sign-out text-xs opacity-50"></i>
                 Delogare
               </button>
-            </div>
-          }
+            } @else {
+              <!-- Guest Mobile Auth -->
+              <div class="md:hidden">
+                <a
+                  routerLink="/login"
+                  (click)="closeDropdown()"
+                  class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-orange transition-all"
+                >
+                  <i class="pi pi-sign-in text-xs opacity-50"></i>
+                  Login
+                </a>
+                <a
+                  routerLink="/register"
+                  (click)="closeDropdown()"
+                  class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-900 hover:bg-slate-50 hover:text-orange transition-all"
+                >
+                  <i class="pi pi-user-plus text-xs opacity-50"></i>
+                  Creează Cont
+                </a>
+              </div>
+            }
+          </div>
+        }
 
-          @if (isDropdownOpen()) {
-            <div class="fixed inset-0 z-[-1]" (click)="closeDropdown()"></div>
-          }
-        </div>
-      } @else {
-        <div class="flex items-center gap-2">
-          <a
-            routerLink="/login"
-            class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-orange transition-all"
-          >
-            Login
-          </a>
-          <a
-            routerLink="/register"
-            class="px-6 py-2.5 text-sm bg-slate-900 text-white rounded-xl font-black hover:bg-orange shadow-lg shadow-slate-900/10 hover:shadow-orange/20 transition-all active:scale-95"
-          >
-            Creează Cont
-          </a>
-        </div>
-      }
+        @if (isDropdownOpen()) {
+          <div class="fixed inset-0 z-[-1]" (click)="closeDropdown()"></div>
+        }
+      </div>
     </div>
   </div>
 </nav>

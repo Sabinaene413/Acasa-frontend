@@ -105,47 +105,55 @@ export class PropertyMapComponent implements AfterViewInit {
     if (!properties || properties.length === 0) return;
 
     const zoom = map.getZoom();
-    const clustered = this.clusterProperties(properties, zoom);
+    const validProperties = properties.filter(p => p.latitude != null && p.longitude != null);
+    const clustered = this.clusterProperties(validProperties, zoom);
 
     clustered.forEach(cluster => {
-      const marker = cluster.count > 1
-        ? L.marker([cluster.lat, cluster.lng], {
-            icon: L.divIcon({
-              className: '',
-              html: `<div class="custom-cluster">${cluster.count}</div>`,
-              iconSize: [40, 40], iconAnchor: [20, 20],
-            })
+      let marker;
+      if (cluster.count > 1) {
+        marker = L.marker([cluster.lat, cluster.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div class="custom-cluster">${cluster.count}</div>`,
+            iconSize: [40, 40], iconAnchor: [20, 20],
           })
-        : L.marker([cluster.lat, cluster.lng], {
-            icon: L.divIcon({
-              className: '',
-              html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(cluster.properties[0].price)} €</div>`,
-              iconSize: [80, 30], iconAnchor: [40, 15],
-            })
-          }).bindPopup(this.createPopupHtml(cluster.properties[0]), { offset: L.point(0, -15) });
+        });
+        marker.on('click', () => {
+          const clusterBounds = L.latLngBounds(cluster.properties.map(p => [p.latitude!, p.longitude!]));
+          map.fitBounds(clusterBounds.pad(0.2));
+        });
+      } else {
+        const p = cluster.properties[0];
+        marker = L.marker([p.latitude!, p.longitude!], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(p.price)} €</div>`,
+            iconSize: [80, 30], iconAnchor: [40, 15],
+          })
+        }).bindPopup(this.createPopupHtml(p), { offset: L.point(0, -15) });
+      }
 
       marker.addTo(map);
       this.currentMarkers.push(marker);
     });
 
-    if (shouldFitBounds && this.currentMarkers.length > 0 && properties.length > 0) {
-      const validCoords = properties
-        .filter(p => p.latitude != null && p.longitude != null)
-        .map(p => [p.latitude!, p.longitude!] as [number, number]);
-
-      if (validCoords.length > 0) {
-        const bounds = L.latLngBounds(validCoords);
-        if (bounds.isValid()) {
-          map.fitBounds(bounds.pad(0.1));
-        }
+    if (shouldFitBounds && this.currentMarkers.length > 0 && validProperties.length > 0) {
+      const bounds = L.latLngBounds(validProperties.map(p => [p.latitude!, p.longitude!]));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.1));
       }
     }
   }
 
   private clusterProperties(properties: Property[], zoom: number): { lat: number, lng: number, count: number, properties: Property[] }[] {
-    const radius = Math.max(0.01, 2 / Math.pow(2, zoom - 5));
+    // Ajustăm raza în funcție de zoom. La zoom mare (15+), raza trebuie să fie foarte mică.
+    // 2 / 2^(zoom-5) este o formulă bună, dar eliminăm Math.max(0.01) care era prea restrictiv la zoom mare.
+    const radius = 2 / Math.pow(2, zoom - 5);
     const clusters: { lat: number, lng: number, count: number, properties: Property[] }[] = [];
     const used = new Set<number>();
+
+    // Factor de corecție pentru longitudine bazat pe latitudinea medie a României (~45 grade)
+    const lngContext = Math.cos(45 * Math.PI / 180);
 
     properties.forEach((p, i) => {
       if (used.has(i)) return;
@@ -154,10 +162,16 @@ export class PropertyMapComponent implements AfterViewInit {
 
       properties.forEach((p2, j) => {
         if (used.has(j)) return;
-        const dist = Math.sqrt(Math.pow(p.latitude! - p2.latitude!, 2) + Math.pow(p.longitude! - p2.longitude!, 2));
+        
+        // Calculăm distanța aproximativă în grade, corectând longitudinea
+        const latDist = p.latitude! - p2.latitude!;
+        const lngDist = (p.longitude! - p2.longitude!) * lngContext;
+        const dist = Math.sqrt(latDist * latDist + lngDist * lngDist);
+        
         if (dist < radius) {
           cluster.count++;
           cluster.properties.push(p2);
+          // Actualizăm centrul clusterului (media aritmetică)
           cluster.lat = (cluster.lat * (cluster.count - 1) + p2.latitude!) / cluster.count;
           cluster.lng = (cluster.lng * (cluster.count - 1) + p2.longitude!) / cluster.count;
           used.add(j);
