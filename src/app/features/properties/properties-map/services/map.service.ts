@@ -1,19 +1,26 @@
 import { Injectable } from '@angular/core';
 import { Property } from '../../models/property.model';
 
+export interface MapCluster {
+  lat: number;
+  lng: number;
+  count: number;
+  properties: Property[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
-  clusterProperties(properties: Property[], zoom: number): any[] {
+  clusterProperties(properties: Property[], zoom: number): MapCluster[] {
     const radius = 2 / Math.pow(2, zoom - 5);
-    const clusters: any[] = [];
+    const clusters: MapCluster[] = [];
     const used = new Set<number>();
     const lngContext = Math.cos(45 * Math.PI / 180);
 
     properties.forEach((p, i) => {
       if (used.has(i)) return;
-      const cluster = { lat: p.latitude!, lng: p.longitude!, count: 1, properties: [p] };
+      const cluster: MapCluster = { lat: p.latitude!, lng: p.longitude!, count: 1, properties: [p] };
       used.add(i);
 
       properties.forEach((p2, j) => {

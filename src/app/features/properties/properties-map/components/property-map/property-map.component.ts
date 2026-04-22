@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, input, effect, inject, signal, output } from '@angular/core';
 import { Property } from '../../../models/property.model';
-import { MapService } from '../services/map.service';
+import { MapService, MapCluster } from '../../services/map.service';
 
 @Component({
   selector: 'app-property-map-ui',
@@ -32,7 +32,7 @@ import { MapService } from '../services/map.service';
   `],
 })
 export class PropertyMapComponent implements AfterViewInit {
-  private mapService = inject(MapService);
+  protected mapService = inject(MapService);
   private mapInstance = signal<any>(undefined);
   private currentMarkers = new Map<string, any>();
 
@@ -106,10 +106,10 @@ export class PropertyMapComponent implements AfterViewInit {
     
     const nextMarkers = new Map<string, any>();
 
-    clusters.forEach((cluster, idx) => {
+    clusters.forEach((cluster: MapCluster) => {
       const key = cluster.count > 1 
-        ? `cluster-${cluster.properties.sort((a,b) => a.id - b.id).map(p => p.id).join('-')}`
-        : `prop-${cluster.properties[0].id}`;
+        ? `cluster-${cluster.properties.slice().sort((a: Property, b: Property) => a.id! - b.id!).map((p: Property) => p.id!).join('-')}`
+        : `prop-${cluster.properties[0].id!}`;
 
       let marker = this.currentMarkers.get(key);
 
@@ -126,12 +126,12 @@ export class PropertyMapComponent implements AfterViewInit {
             })
           });
           marker.on('click', () => {
-            const bounds = L.latLngBounds(cluster.properties.map((p: any) => [p.latitude, p.longitude]));
+            const bounds = L.latLngBounds(cluster.properties.map((p: Property) => [p.latitude!, p.longitude!]));
             map.fitBounds(bounds.pad(0.2));
           });
         } else {
           const p = cluster.properties[0];
-          marker = L.marker([p.latitude, p.longitude], {
+          marker = L.marker([p.latitude!, p.longitude!], {
             icon: L.divIcon({
               className: '',
               html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(p.price)} €</div>`,
