@@ -1,9 +1,6 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, input, effect, inject, signal, output } from '@angular/core';
 import { Property } from '../../../models/property.model';
 import { Router } from '@angular/router';
-import * as L from 'leaflet';
-//import 'leaflet.markercluster/dist/leaflet.markercluster.js';
-declare const require: any;
 
 @Component({
   selector: 'app-property-map-ui',
@@ -32,11 +29,11 @@ declare const require: any;
 })
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
-  private mapInstance = signal<L.Map | undefined>(undefined);
-  private markersCluster: any; 
+  private mapInstance = signal<any>(undefined);
+  private markersCluster: any;
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
-  
+
   properties = input<Property[]>([]);
   propertySelected = output<number>();
 
@@ -44,18 +41,18 @@ export class PropertyMapComponent implements AfterViewInit {
     effect(() => {
       const props = this.properties();
       const map = this.mapInstance();
-      if (map) this.updateMarkers(map, props);
+      if (map && this.markersCluster) this.updateMarkers(map, props);
     });
   }
 
   ngAfterViewInit() {
-    require('leaflet.markercluster');
+    const leaflet = (window as any).L;
 
-    this.markersCluster = (L as any).markerClusterGroup({
+    this.markersCluster = leaflet.markerClusterGroup({
       showCoverageOnHover: false,
       maxClusterRadius: 60,
       spiderfyOnMaxZoom: true,
-      iconCreateFunction: (cluster: any) => L.divIcon({
+      iconCreateFunction: (cluster: any) => leaflet.divIcon({
         html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
         className: '', iconSize: [40, 40], iconAnchor: [20, 20]
       }),
@@ -72,14 +69,16 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   private initMap() {
-    const map = L.map(this.mapContainer.nativeElement, { 
+    const leaflet = (window as any).L;
+
+    const map = leaflet.map(this.mapContainer.nativeElement, {
       maxZoom: 18,
-      zoomControl: false 
+      zoomControl: false
     }).setView([45.9432, 24.9668], 7);
 
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    leaflet.control.zoom({ position: 'topright' }).addTo(map);
     map.addLayer(this.markersCluster);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     this.mapContainer.nativeElement.addEventListener('click', (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -92,18 +91,20 @@ export class PropertyMapComponent implements AfterViewInit {
     this.mapInstance.set(map);
   }
 
-  private updateMarkers(map: L.Map, properties: Property[]) {
+  private updateMarkers(map: any, properties: Property[]) {
     this.markersCluster.clearLayers();
     if (!properties || properties.length === 0) return;
 
+    const leaflet = (window as any).L;
+
     const newMarkers = properties.map(p => {
-      return L.marker([p.latitude!, p.longitude!], {
-        icon: L.divIcon({
+      return leaflet.marker([p.latitude!, p.longitude!], {
+        icon: leaflet.divIcon({
           className: '',
           html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(p.price)} €</div>`,
           iconSize: [80, 30], iconAnchor: [40, 15],
         })
-      }).bindPopup(this.createPopupHtml(p), { offset: L.point(0, -15) });
+      }).bindPopup(this.createPopupHtml(p), { offset: leaflet.point(0, -15) });
     });
 
     this.markersCluster.addLayers(newMarkers);
