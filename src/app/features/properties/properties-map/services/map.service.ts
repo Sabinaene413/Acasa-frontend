@@ -5,42 +5,36 @@ import { Property } from '../../models/property.model';
   providedIn: 'root'
 })
 export class MapService {
-  createClusterGroup(L: any, onPropertySelected: (id: number) => void): any {
-    const clusterGroup = L.markerClusterGroup({
-      showCoverageOnHover: false,
-      zoomToBoundsOnClick: true,
-      spiderfyOnMaxZoom: true,
-      animate: true,
-      animateAddingMarkers: true,
-      iconCreateFunction: (cluster: any) => {
-        return L.divIcon({
-          className: '',
-          html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-        });
-      }
-    });
+  clusterProperties(properties: Property[], zoom: number): any[] {
+    const radius = 2 / Math.pow(2, zoom - 5);
+    const clusters: any[] = [];
+    const used = new Set<number>();
+    const lngContext = Math.cos(45 * Math.PI / 180);
 
-    return clusterGroup;
+    properties.forEach((p, i) => {
+      if (used.has(i)) return;
+      const cluster = { lat: p.latitude!, lng: p.longitude!, count: 1, properties: [p] };
+      used.add(i);
+
+      properties.forEach((p2, j) => {
+        if (used.has(j)) return;
+        const latDist = p.latitude! - p2.latitude!;
+        const lngDist = (p.longitude! - p2.longitude!) * lngContext;
+        const dist = Math.sqrt(latDist * latDist + lngDist * lngDist);
+        if (dist < radius) {
+          cluster.count++;
+          cluster.properties.push(p2);
+          cluster.lat = (cluster.lat * (cluster.count - 1) + p2.latitude!) / cluster.count;
+          cluster.lng = (cluster.lng * (cluster.count - 1) + p2.longitude!) / cluster.count;
+          used.add(j);
+        }
+      });
+      clusters.push(cluster);
+    });
+    return clusters;
   }
 
-  createMarker(L: any, property: Property, onPropertySelected: (id: number) => void): any {
-    const marker = L.marker([property.latitude, property.longitude], {
-      icon: L.divIcon({
-        className: '',
-        html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(property.price)} €</div>`,
-        iconSize: [80, 30],
-        iconAnchor: [40, 15],
-      })
-    });
-
-    marker.bindPopup(this.createPopupHtml(property), { offset: L.point(0, -15) });
-    
-    return marker;
-  }
-
-  private createPopupHtml(p: Property): string {
+  createPopupHtml(p: Property): string {
     const imageUrl = p.images?.[0]?.url || 'assets/placeholder-property.jpg';
     return `
       <div class="w-56 p-0 overflow-hidden rounded-xl bg-white">
