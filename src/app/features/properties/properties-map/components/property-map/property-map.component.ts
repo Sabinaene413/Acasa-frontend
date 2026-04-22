@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, input, effect, inject,
 import { Property } from '../../../models/property.model';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 
 @Component({
   selector: 'app-property-map-ui',
@@ -32,11 +32,11 @@ import 'leaflet.markercluster';
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
   private mapInstance = signal<L.Map | undefined>(undefined);
-  private markersCluster = L.markerClusterGroup({
+  private markersCluster = (L as any).markerClusterGroup({
     showCoverageOnHover: false,
     maxClusterRadius: 60,
     spiderfyOnMaxZoom: true,
-    iconCreateFunction: (cluster) => L.divIcon({
+    iconCreateFunction: (cluster: any) => L.divIcon({
       html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
       className: '', iconSize: [40, 40], iconAnchor: [20, 20]
     }),

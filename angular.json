@@ -38,6 +38,10 @@
             "scripts": [
                "./node_modules/leaflet/dist/leaflet.js",
                "./node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "leaflet",
+              "leaflet.markercluster"
             ]
           },
           "configurations": {
