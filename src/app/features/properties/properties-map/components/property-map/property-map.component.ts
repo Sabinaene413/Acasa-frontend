@@ -46,6 +46,8 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+      console.log('window.L:', (window as any).L);
+      console.log('markerClusterGroup:', (window as any).L?.markerClusterGroup);
     const leaflet = (window as any).L;
 
     this.markersCluster = leaflet.markerClusterGroup({
