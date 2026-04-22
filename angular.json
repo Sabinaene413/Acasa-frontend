@@ -31,7 +31,6 @@
             ],
             "styles": [
               "src/styles.scss",
-              "public/leaflet-lib.css",
               "public/MarkerCluster.css",
               "public/MarkerCluster.Default.css"
             ],
