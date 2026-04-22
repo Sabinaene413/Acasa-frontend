@@ -46,21 +46,35 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-      console.log('window.L:', (window as any).L);
-      console.log('markerClusterGroup:', (window as any).L?.markerClusterGroup);
-    const leaflet = (window as any).L;
-
-    this.markersCluster = leaflet.markerClusterGroup({
-      showCoverageOnHover: false,
-      maxClusterRadius: 60,
-      spiderfyOnMaxZoom: true,
-      iconCreateFunction: (cluster: any) => leaflet.divIcon({
-        html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
-        className: '', iconSize: [40, 40], iconAnchor: [20, 20]
-      }),
+    this.loadMarkerCluster().then(() => {
+      const leaflet = (window as any).L;
+      this.markersCluster = leaflet.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 60,
+        spiderfyOnMaxZoom: true,
+        iconCreateFunction: (cluster: any) => leaflet.divIcon({
+          html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
+          className: '', iconSize: [40, 40], iconAnchor: [20, 20]
+        }),
+      });
+      this.initMap();
     });
+  }
 
-    this.initMap();
+  private loadMarkerCluster(): Promise<void> {
+    return new Promise((resolve) => {
+      if ((window as any).L?.markerClusterGroup) {
+        resolve();
+        return;
+      }
+      const interval = setInterval(() => {
+        if ((window as any).L?.markerClusterGroup) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+      setTimeout(() => { clearInterval(interval); resolve(); }, 5000);
+    });
   }
 
   public resizeMap() {
