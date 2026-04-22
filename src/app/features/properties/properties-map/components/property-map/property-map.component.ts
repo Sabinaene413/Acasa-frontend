@@ -41,7 +41,9 @@ export class PropertyMapComponent implements AfterViewInit {
     effect(() => {
       const props = this.properties();
       const map = this.mapInstance();
-      if (map) this.updateMarkers(map, props);
+      if (map && props && props.length > 0) {
+        this.updateMarkers(map, props, true);
+      }
     });
   }
 
@@ -77,9 +79,9 @@ export class PropertyMapComponent implements AfterViewInit {
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    map.on('zoomend moveend', () => {
+    map.on('zoomend', () => {
       const props = this.properties();
-      if (props?.length) this.updateMarkers(map, props);
+      if (props?.length) this.updateMarkers(map, props, false);
     });
 
     this.mapContainer.nativeElement.addEventListener('click', (event: MouseEvent) => {
@@ -93,7 +95,7 @@ export class PropertyMapComponent implements AfterViewInit {
     this.mapInstance.set(map);
   }
 
-  private updateMarkers(map: any, properties: Property[]) {
+  private updateMarkers(map: any, properties: Property[], shouldFitBounds: boolean = false) {
     const L = (window as any).L;
 
     // Șterge markerii vechi
@@ -126,9 +128,17 @@ export class PropertyMapComponent implements AfterViewInit {
       this.currentMarkers.push(marker);
     });
 
-    if (this.currentMarkers.length > 0 && properties.length > 0) {
-      const bounds = L.latLngBounds(properties.map(p => [p.latitude!, p.longitude!]));
-      if (bounds.isValid()) map.fitBounds(bounds.pad(0.1));
+    if (shouldFitBounds && this.currentMarkers.length > 0 && properties.length > 0) {
+      const validCoords = properties
+        .filter(p => p.latitude != null && p.longitude != null)
+        .map(p => [p.latitude!, p.longitude!] as [number, number]);
+
+      if (validCoords.length > 0) {
+        const bounds = L.latLngBounds(validCoords);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds.pad(0.1));
+        }
+      }
     }
   }
 
