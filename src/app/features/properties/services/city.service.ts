@@ -3,12 +3,13 @@ import { Injectable, inject } from '@angular/core';
 import { City } from '../models/city.model';
 import { County } from '../models/county.model';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CityService {
-  private apiUrl = 'https://localhost:7102/api/Cities';
+  private apiUrl = `${environment.baseUrl}/api/Cities`;
   private http = inject(HttpClient);
 
   getCities(): Observable<City[]> {
@@ -16,7 +17,7 @@ export class CityService {
   }
 
   getCounties(): Observable<County[]> {
-    return this.http.get<County[]>('https://localhost:7102/api/Counties');
+    return this.http.get<County[]>(`${environment.baseUrl}/api/Counties`);
   }
 
   getCitiesByCounty(countyId: number): Observable<City[]> {

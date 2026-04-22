@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SavedSearch, SavedSearchCreate } from '../models/saved-search.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SavedSearchService {
-  private apiUrl = 'https://localhost:7102/api/savedsearches';
+  private apiUrl = `${environment.baseUrl}/api/savedsearches`;
   private http = inject(HttpClient);
 
   getSavedSearches(): Observable<SavedSearch[]> {

@@ -3,12 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import { CurrentUser } from './models/user.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7102'; // Verifică portul tău din appsettings.json
+  private apiUrl = `${environment.baseUrl}`;
 
   isAuthenticated = signal<boolean>(this.hasToken());
   currentUser = signal<CurrentUser | null>(null);
@@ -22,7 +23,7 @@ export class AuthService {
   }
 
   register(data: any) {
-    return this.http.post(`${this.apiUrl}/api/Account/register`, data).pipe(
+    return this.http.post(`${this.apiUrl}/register`, data).pipe(
       tap((res) => console.log('Register response:', res)),
       catchError(this.handleError),
     );
@@ -56,9 +57,7 @@ export class AuthService {
     console.error('An error occurred:', error);
     if (error.status === 0) {
       console.error(
-        'Could not connect to backend. Is the server running at ' +
-          'https://localhost:7102' +
-          '?',
+        `Could not connect to backend. Is the server running at ${this.apiUrl}?`,
       );
     }
     return throwError(
