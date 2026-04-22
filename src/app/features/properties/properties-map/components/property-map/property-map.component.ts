@@ -30,7 +30,7 @@ import { Router } from '@angular/router';
 export class PropertyMapComponent implements AfterViewInit {
   private router = inject(Router);
   private mapInstance = signal<any>(undefined);
-  private markersCluster: any;
+  private currentMarkers: any[] = [];
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
@@ -41,37 +41,19 @@ export class PropertyMapComponent implements AfterViewInit {
     effect(() => {
       const props = this.properties();
       const map = this.mapInstance();
-      if (map && this.markersCluster) this.updateMarkers(map, props);
+      if (map) this.updateMarkers(map, props);
     });
   }
 
   ngAfterViewInit() {
-    this.loadMarkerCluster().then(() => {
-      const leaflet = (window as any).L;
-      this.markersCluster = leaflet.markerClusterGroup({
-        showCoverageOnHover: false,
-        maxClusterRadius: 60,
-        spiderfyOnMaxZoom: true,
-        iconCreateFunction: (cluster: any) => leaflet.divIcon({
-          html: `<div class="custom-cluster">${cluster.getChildCount()}</div>`,
-          className: '', iconSize: [40, 40], iconAnchor: [20, 20]
-        }),
-      });
-      this.initMap();
-    });
+    this.loadLeaflet().then(() => this.initMap());
   }
 
-  private loadMarkerCluster(): Promise<void> {
+  private loadLeaflet(): Promise<void> {
     return new Promise((resolve) => {
-      if ((window as any).L?.markerClusterGroup) {
-        resolve();
-        return;
-      }
+      if ((window as any).L) { resolve(); return; }
       const interval = setInterval(() => {
-        if ((window as any).L?.markerClusterGroup) {
-          clearInterval(interval);
-          resolve();
-        }
+        if ((window as any).L) { clearInterval(interval); resolve(); }
       }, 50);
       setTimeout(() => { clearInterval(interval); resolve(); }, 5000);
     });
@@ -85,16 +67,20 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   private initMap() {
-    const leaflet = (window as any).L;
+    const L = (window as any).L;
 
-    const map = leaflet.map(this.mapContainer.nativeElement, {
+    const map = L.map(this.mapContainer.nativeElement, {
       maxZoom: 18,
       zoomControl: false
     }).setView([45.9432, 24.9668], 7);
 
-    leaflet.control.zoom({ position: 'topright' }).addTo(map);
-    map.addLayer(this.markersCluster);
-    leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    map.on('zoomend moveend', () => {
+      const props = this.properties();
+      if (props?.length) this.updateMarkers(map, props);
+    });
 
     this.mapContainer.nativeElement.addEventListener('click', (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -108,24 +94,70 @@ export class PropertyMapComponent implements AfterViewInit {
   }
 
   private updateMarkers(map: any, properties: Property[]) {
-    this.markersCluster.clearLayers();
+    const L = (window as any).L;
+
+    // Șterge markerii vechi
+    this.currentMarkers.forEach(m => map.removeLayer(m));
+    this.currentMarkers = [];
+
     if (!properties || properties.length === 0) return;
 
-    const leaflet = (window as any).L;
+    const zoom = map.getZoom();
+    const clustered = this.clusterProperties(properties, zoom);
 
-    const newMarkers = properties.map(p => {
-      return leaflet.marker([p.latitude!, p.longitude!], {
-        icon: leaflet.divIcon({
-          className: '',
-          html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(p.price)} €</div>`,
-          iconSize: [80, 30], iconAnchor: [40, 15],
-        })
-      }).bindPopup(this.createPopupHtml(p), { offset: leaflet.point(0, -15) });
+    clustered.forEach(cluster => {
+      const marker = cluster.count > 1
+        ? L.marker([cluster.lat, cluster.lng], {
+            icon: L.divIcon({
+              className: '',
+              html: `<div class="custom-cluster">${cluster.count}</div>`,
+              iconSize: [40, 40], iconAnchor: [20, 20],
+            })
+          })
+        : L.marker([cluster.lat, cluster.lng], {
+            icon: L.divIcon({
+              className: '',
+              html: `<div class="price-marker">${new Intl.NumberFormat('de-DE').format(cluster.properties[0].price)} €</div>`,
+              iconSize: [80, 30], iconAnchor: [40, 15],
+            })
+          }).bindPopup(this.createPopupHtml(cluster.properties[0]), { offset: L.point(0, -15) });
+
+      marker.addTo(map);
+      this.currentMarkers.push(marker);
     });
 
-    this.markersCluster.addLayers(newMarkers);
-    const bounds = this.markersCluster.getBounds();
-    if (bounds.isValid()) map.fitBounds(bounds.pad(0.1));
+    if (this.currentMarkers.length > 0 && properties.length > 0) {
+      const bounds = L.latLngBounds(properties.map(p => [p.latitude!, p.longitude!]));
+      if (bounds.isValid()) map.fitBounds(bounds.pad(0.1));
+    }
+  }
+
+  private clusterProperties(properties: Property[], zoom: number): { lat: number, lng: number, count: number, properties: Property[] }[] {
+    const radius = Math.max(0.01, 2 / Math.pow(2, zoom - 5));
+    const clusters: { lat: number, lng: number, count: number, properties: Property[] }[] = [];
+    const used = new Set<number>();
+
+    properties.forEach((p, i) => {
+      if (used.has(i)) return;
+      const cluster = { lat: p.latitude!, lng: p.longitude!, count: 1, properties: [p] };
+      used.add(i);
+
+      properties.forEach((p2, j) => {
+        if (used.has(j)) return;
+        const dist = Math.sqrt(Math.pow(p.latitude! - p2.latitude!, 2) + Math.pow(p.longitude! - p2.longitude!, 2));
+        if (dist < radius) {
+          cluster.count++;
+          cluster.properties.push(p2);
+          cluster.lat = (cluster.lat * (cluster.count - 1) + p2.latitude!) / cluster.count;
+          cluster.lng = (cluster.lng * (cluster.count - 1) + p2.longitude!) / cluster.count;
+          used.add(j);
+        }
+      });
+
+      clusters.push(cluster);
+    });
+
+    return clusters;
   }
 
   private createPopupHtml(p: Property): string {
